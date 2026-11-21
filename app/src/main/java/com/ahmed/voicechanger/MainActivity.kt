@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
         }
         toggleButton = Button(this).apply { setOnClickListener { toggleService() } }
         val hint = TextView(this).apply {
-            text = "الصوت المتغير يطلع على السماعة. البس سماعة رأس عشان مفيش صفير. مكالمة الشبكة العادية مش بتتغير من هنا، حتى لو Shizuku متصل."
+            text = "وصّل سماعة البلوتوث قبل التشغيل. الصوت المتغير يدخل من مايكها ويطلع فيها. مكالمة الشبكة العادية مش هتتغير."
             textSize = 14f
         }
         val gap = LinearLayout.LayoutParams(
@@ -94,6 +94,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         syncToggle()
+        if (VoiceConfig.route.isNotEmpty()) statusText.text = VoiceConfig.route
     }
 
     override fun onDestroy() {
@@ -131,12 +132,13 @@ class MainActivity : AppCompatActivity() {
         if (VoiceConfig.running) {
             stopService(Intent(this, VoiceService::class.java))
             VoiceConfig.running = false
+            VoiceConfig.route = ""
             syncToggle()
             return
         }
         if (!hasAudioPermission()) {
             requestNeededPermissions()
-            Toast.makeText(this, "اقبل إذن المايك الأول", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "اقبل إذن المايك والبلوتوث الأول", Toast.LENGTH_SHORT).show()
             return
         }
         startForegroundService(Intent(this, VoiceService::class.java))
@@ -153,12 +155,18 @@ class MainActivity : AppCompatActivity() {
         ) {
             return false
         }
+        if (Build.VERSION.SDK_INT >= 31 &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return false
+        }
         return true
     }
 
     private fun requestNeededPermissions() {
         val needed = mutableListOf(Manifest.permission.RECORD_AUDIO)
         if (Build.VERSION.SDK_INT >= 33) needed += Manifest.permission.POST_NOTIFICATIONS
+        if (Build.VERSION.SDK_INT >= 31) needed += Manifest.permission.BLUETOOTH_CONNECT
         ActivityCompat.requestPermissions(this, needed.toTypedArray(), REQ_AUDIO)
     }
 
