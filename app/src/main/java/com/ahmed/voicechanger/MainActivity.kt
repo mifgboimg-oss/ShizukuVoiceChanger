@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
+import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.SeekBar
@@ -41,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
-            layoutDirection = LAYOUT_DIRECTION_RTL
+            layoutDirection = View.LAYOUT_DIRECTION_RTL
             setPadding(48, 72, 48, 48)
         }
         val title = TextView(this).apply {
